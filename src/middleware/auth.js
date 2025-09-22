@@ -1,22 +1,25 @@
-import { verifyToken } from '../utils/jwt.js';
+import jwt from 'jsonwebtoken';
+import User from '../models/user.js';
 
-export const authenticate = (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Access denied. No token provided.' });
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ error: 'Access token required' });
     }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    const user = await User.findById(decoded.userId);
     
-    const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
-    req.user = decoded;
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid token.' });
+    res.status(403).json({ error: 'Invalid or expired token' });
   }
-};
-
-export const authorize = (req, res, next) => {
-  next();
 };

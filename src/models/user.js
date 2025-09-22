@@ -1,24 +1,32 @@
 import pool from '../config/database.js';
 
-export const createUser = async (username, email, passwordHash) => {
-  const query = `
-    INSERT INTO users (username, email, password_hash) 
-    VALUES ($1, $2, $3) 
-    RETURNING id, username, email, created_at
-  `;
-  const values = [username, email, passwordHash];
-  const result = await pool.query(query, values);
-  return result.rows[0];
-};
+class User {
+  static async create(userData) {
+    const { username, email, password_hash } = userData;
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING *',
+      [username, email, password_hash]
+    );
+    return result.rows[0];
+  }
 
-export const findUserByEmail = async (email) => {
-  const query = 'SELECT * FROM users WHERE email = $1';
-  const result = await pool.query(query, [email]);
-  return result.rows[0];
-};
+  static async findByEmail(email) {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    return result.rows[0];
+  }
 
-export const findUserById = async (id) => {
-  const query = 'SELECT id, username, email, created_at FROM users WHERE id = $1';
-  const result = await pool.query(query, [id]);
-  return result.rows[0];
-};
+  static async findById(id) {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    return result.rows[0];
+  }
+
+  static async updateProfilePicture(userId, filename) {
+    const result = await pool.query(
+      'UPDATE users SET profile_picture = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [filename, userId]
+    );
+    return result.rows[0];
+  }
+}
+
+export default User;

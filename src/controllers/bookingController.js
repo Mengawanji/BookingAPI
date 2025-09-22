@@ -21,9 +21,9 @@ export const bookEventSeats = async (req, res) => {
       return res.status(404).json({ error: 'Event not found' });
     }
     
-    if (new Date(event.date) <= new Date()) {
-      return res.status(400).json({ error: 'Cannot book seats for past events' });
-    }
+    // if (new Date(event.date) <= new Date()) {
+    //   return res.status(400).json({ error: 'Cannot book seats for past events' });
+    // }
     
     const booking = await createBooking(id, userId, parseInt(seats), client);
     
