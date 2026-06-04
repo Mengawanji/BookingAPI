@@ -1,7 +1,7 @@
 import pg from 'pg';
 const {Pool} = pg;
 import dotenv from 'dotenv';
-import logger from "./config/logger.js";
+import logger from "./logger.js";
 
 dotenv.config();
 
@@ -15,8 +15,6 @@ const pool = new Pool ( {
 
 export default pool;
 
-
-// Test connection
 const testConnection = async () => {
   try {
     const client = await pool.connect();
