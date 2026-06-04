@@ -13,4 +13,4 @@ router.get('/', authenticate, listUserBookings);
 router.post('/events/:id/book', authenticate, validateBooking, bookEventSeats);
 router.delete('/:id', authenticate, cancelBooking);
 
-export default router;
+export default router; 
