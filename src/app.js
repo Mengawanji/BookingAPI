@@ -1,44 +1,42 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import authRoutes from './routes/auth.js';
-import eventRoutes from './routes/events.js';
-import bookingRoutes from './routes/bookings.js';
-import { createTablesAndIndexes } from './config/init-db.js';
-import { testConnection } from './config/database.js';
+import express from "express";
+import cors from "cors";
 
-dotenv.config();
+import authRoutes from "./routes/auth.js";
+import eventRoutes from "./routes/events.js";
+import bookingRoutes from "./routes/bookings.js";
+
+import { errorHandler, notFound } from "./middleware/errorHandler.js";
+import { createTablesAndIndexes } from "./config/init-db.js";
+import { testConnection } from "./config/database.js";
+import logger from "./config/logger.js";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-(async () => {
-  try {
-    await testConnection();
-    await createTablesAndIndexes();
-    console.log('Database initialized successfully');
-  } catch (err) {
-    console.error('Database initialization failed:', err.message);
-  }
-})();
-
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/events', eventRoutes);
-app.use('/bookings', bookingRoutes);
+app.use("/auth", authRoutes);
+app.use("/events", eventRoutes);
+app.use("/bookings", bookingRoutes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Event Management/Booking API is running' });
+// Health check
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", message: "Event Management/Booking API is running" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.use(notFound);
+app.use(errorHandler);
+
+export const initializeApp = async () => {
+  try {
+    await testConnection();
+    await createTablesAndIndexes();
+    logger.info("Database initialized successfully");
+  } catch (err) {
+    logger.fatal({ err }, "Database initialization failed");
+    process.exit(1);
+  }
+};
 
 export default app;

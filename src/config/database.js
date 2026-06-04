@@ -1,6 +1,7 @@
 import pg from 'pg';
 const {Pool} = pg;
 import dotenv from 'dotenv';
+import logger from "./config/logger.js";
 
 dotenv.config();
 
@@ -19,10 +20,10 @@ export default pool;
 const testConnection = async () => {
   try {
     const client = await pool.connect();
-    console.log('Database connected successfully');
+    logger.info("Database connected successfully");
     client.release();
   } catch (error) {
-    console.error('Database connection failed:', error.message);
+    logger.fatal({ error }, "Database connection failed");
     process.exit(1);
   }
 };
